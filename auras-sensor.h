@@ -1,5 +1,5 @@
-String TOUCH_ENDPOINT = "/touch";
-String LIGHT_ENDPOINT = "/light";
+String TOUCH_ENDPOINT = "/set-touch";
+String LIGHT_ENDPOINT = "/get-light";
 
 String OTA_HOSTNAME = "Auras-";
 String ID = "";
@@ -24,7 +24,8 @@ void setupAndStartOTA() {
 }
 
 String getIdFromMacAddress(String mac) {
-  if (mac.indexOf("2C:3A:E8:1C:C2:E7") != -1) return  "1";
-  else return "0";
+  if (mac.indexOf("2C:3A:E8:1C:C2:E7") != -1) return  "0";
+  if (mac.indexOf("2C:3A:E8:1C:C2:E6") != -1) return  "1";
+  else return "-1";
 }
 
