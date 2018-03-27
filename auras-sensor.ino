@@ -1,3 +1,4 @@
+#include <Wire.h>
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -15,27 +16,34 @@ Light mLight;
 bool bUpdateTouch = false;
 
 int lightValue = LOW;
-int touchValue = LOW;
+long touchValue = LOW;
+
+long TOUCH_THRESHOLD = 20000;
 
 void setup() {
   Serial.begin(115200);
   Serial.println("\nSetup");
-  pinMode(2, OUTPUT);
+  pinMode(D4, OUTPUT);
+  Wire.begin(D2, D1);
 
-  nextTouchUpdate = millis() + TOUCH_UPDATE_PERIOD_MILLIS;
+  mLight.setColor(0.0f);
   nextLightUpdate = millis() + LIGHT_UPDATE_PERIOD_MILLIS;
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID.c_str(), WIFI_PASS.c_str());
 
   for (int counter = 0; (WiFi.status() != WL_CONNECTED) && (counter < 32); counter++) {
-    delay(500);
+    delay(800);
+    Serial.println("Trying WiFi");
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("Connected");
   }
 
-  ID = getIdFromMacAddress(WiFi.macAddress());
-  OTA_HOSTNAME += ID;
+  OTA_HOSTNAME += WiFi.macAddress().substring(12);
 
   setupAndStartOTA();
+  mLight.setColor(1.0f);
 }
 
 void updateLight() {
@@ -48,32 +56,44 @@ void updateLight() {
     lightValue = http.getString().toInt();
   }
   http.end();
+
   lightValue = (int)random(0, 2);
-  mLight.setColor((float)lightValue);
+  Serial.println(lightValue);
+  if (lightValue) {
+    mLight.setColor(1.0f);
+    bUpdateTouch = true;
+  }
 }
 
 void updateTouch() {
-  // TODO: read sensor
-  touchValue = (int)random(0, 2);
+  for (int i = 0; i < 4; i++) {
+    //touchValue = touchSensor.capacitiveSensor(32);
+    Serial.println(touchValue);
+    if (touchValue < TOUCH_THRESHOLD) return;
+    delay(100);
+  }
+
   HTTPClient http;
-  http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + TOUCH_ENDPOINT);
+  http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + TOUCH_ENDPOINT + "/1");
   int httpCode = http.GET();
   delay(10);
   http.end();
+  delay(4000);
+  mLight.setColor(0.0f);
+  bUpdateTouch = false;
 }
 
 void loop() {
-  if (bUpdateTouch && (millis() > nextTouchUpdate)) {
-    if (WiFi.status() == WL_CONNECTED) updateTouch();
-    nextTouchUpdate += TOUCH_UPDATE_PERIOD_MILLIS;
-  }
-
-  if ((millis() > nextLightUpdate)) {
+  if ((!bUpdateTouch) && (millis() > nextLightUpdate)) {
     if (WiFi.status() == WL_CONNECTED) updateLight();
     nextLightUpdate += LIGHT_UPDATE_PERIOD_MILLIS;
   }
 
-  digitalWrite(2, (nextTouchUpdate / TOUCH_UPDATE_PERIOD_MILLIS) % 2);
+  if (bUpdateTouch) {
+    if (WiFi.status() == WL_CONNECTED) updateTouch();
+  }
+
+  digitalWrite(D4, (nextLightUpdate / LIGHT_UPDATE_PERIOD_MILLIS) % 2);
   ArduinoOTA.handle();
 }
 

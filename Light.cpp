@@ -1,5 +1,8 @@
 #include "Light.h"
 
+short LED_PIN = D5;
+short NUMPIXELS = 24;
+
 Light::Light() {
   mBrightness = 0;
 }
@@ -22,10 +25,13 @@ void Light::setColor(float colorPercent) {
   mPixels = new Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
   mPixels->begin();
 
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < 256; i+=2) {
     setPixelsColor(map(i, 0, 255, mBrightness, targetBrightness));
     delay(10);
   }
+  setPixelsColor(targetBrightness);
+  delay(10);
+
   delete mPixels;
   mBrightness = targetBrightness;
 }

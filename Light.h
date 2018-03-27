@@ -1,8 +1,5 @@
 #include <Adafruit_NeoPixel.h>
 
-#define LED_PIN 5
-#define NUMPIXELS 24
-
 class Light {
   private:
     int mBrightness;
@@ -12,5 +9,4 @@ class Light {
     Light();
     void setColor(float colorPercent);
 };
-
 

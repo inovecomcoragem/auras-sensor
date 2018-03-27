@@ -2,10 +2,6 @@ String TOUCH_ENDPOINT = "/set-touch";
 String LIGHT_ENDPOINT = "/get-light";
 
 String OTA_HOSTNAME = "Auras-";
-String ID = "";
-
-long TOUCH_UPDATE_PERIOD_MILLIS = 5e3L;
-long nextTouchUpdate = 0L;
 
 long LIGHT_UPDATE_PERIOD_MILLIS = 5e3L;
 long nextLightUpdate = 0L;
@@ -21,11 +17,5 @@ void setupAndStartOTA() {
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
   ArduinoOTA.begin();
-}
-
-String getIdFromMacAddress(String mac) {
-  if (mac.indexOf("2C:3A:E8:1C:C2:E7") != -1) return  "0";
-  if (mac.indexOf("2C:3A:E8:1C:C2:E6") != -1) return  "1";
-  else return "-1";
 }
 
