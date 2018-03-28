@@ -1,4 +1,3 @@
-#include <Wire.h>
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -16,15 +15,15 @@ Light mLight;
 bool bUpdateTouch = false;
 
 int lightValue = LOW;
-long touchValue = LOW;
+int touchValue = LOW;
 
-long TOUCH_THRESHOLD = 20000;
+short PIR_PIN = D2;
 
 void setup() {
   Serial.begin(115200);
   Serial.println("\nSetup");
   pinMode(D4, OUTPUT);
-  Wire.begin(D2, D1);
+  pinMode(PIR_PIN, INPUT);
 
   mLight.setColor(0.0f);
   nextLightUpdate = millis() + LIGHT_UPDATE_PERIOD_MILLIS;
@@ -43,7 +42,6 @@ void setup() {
   OTA_HOSTNAME += WiFi.macAddress().substring(12);
 
   setupAndStartOTA();
-  mLight.setColor(1.0f);
 }
 
 void updateLight() {
@@ -60,16 +58,16 @@ void updateLight() {
   lightValue = (int)random(0, 2);
   Serial.println(lightValue);
   if (lightValue) {
-    mLight.setColor(1.0f);
+    mLight.setColor(0.5f);
     bUpdateTouch = true;
   }
 }
 
 void updateTouch() {
   for (int i = 0; i < 4; i++) {
-    //touchValue = touchSensor.capacitiveSensor(32);
+    touchValue = digitalRead(PIR_PIN);
     Serial.println(touchValue);
-    if (touchValue < TOUCH_THRESHOLD) return;
+    if (!touchValue) return;
     delay(100);
   }
 

@@ -1,6 +1,6 @@
 #include "Light.h"
 
-short LED_PIN = D5;
+short LED_PIN = D1;
 short NUMPIXELS = 24;
 
 Light::Light() {
