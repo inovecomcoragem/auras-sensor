@@ -20,7 +20,7 @@ void Light::setPixelsColor(int color) {
 }
 
 void Light::setColor(float colorPercent) {
-  int targetBrightness = colorPercent * 255;
+  int targetBrightness = colorPercent * 128;
 
   mPixels = new Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
   mPixels->begin();

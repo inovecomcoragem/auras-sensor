@@ -3,7 +3,7 @@ String LIGHT_ENDPOINT = "/get-light";
 
 String OTA_HOSTNAME = "Auras-";
 
-long LIGHT_UPDATE_PERIOD_MILLIS = 5e3L;
+long LIGHT_UPDATE_PERIOD_MILLIS = 2000;
 long nextLightUpdate = 0L;
 
 void setupAndStartOTA() {
