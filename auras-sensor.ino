@@ -54,7 +54,7 @@ void setup() {
   mTicker.attach_ms(10, mSensorSampleWrapper);
 }
 
-void updateLight() {
+int getLightValue() {
   HTTPClient http;
   http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + LIGHT_ENDPOINT);
   int httpCode = http.GET();
@@ -64,8 +64,15 @@ void updateLight() {
     lightValue = http.getString().toInt();
   }
   http.end();
+  return lightValue;
+}
 
-  Serial.println(lightValue);
+void updateLight() {
+  lightValue = getLightValue();
+
+  String printString = "From updateLight: lightValue = " + String(lightValue);
+  Serial.println(printString);
+
   if (lightValue) {
     mLight.setColor(1.0f);
     bUpdateTouch = true;
@@ -73,11 +80,30 @@ void updateLight() {
 }
 
 void updateTouch() {
+  lightValue = getLightValue();
+
+  String printString = "From updateTouch: lightValue = " + String(lightValue);
+  Serial.println(printString);
+
+  if (!lightValue) {
+    mLight.setColor(0.0f);
+    bUpdateTouch = false;
+    touchValue = 0;
+    return;
+  }
+
+  if (touchValue) {
+    delay(300);
+    return;
+  }
+
   for (int i = 0; i < 4; i++) {
     touchValue = mSensor.getReading();
-    Serial.println(touchValue);
-    if (!touchValue) return;
+
+    String printString = "From updateTouch: touchValue = " + String(touchValue);
+    Serial.println(printString);
     delay(100);
+    if (!touchValue) return;
   }
 
   HTTPClient http;
@@ -85,7 +111,6 @@ void updateTouch() {
   http.GET();
   delay(10);
   http.end();
-  bUpdateTouch = false;
 }
 
 void loop() {
