@@ -1,4 +1,7 @@
 const short PIXELS_PIN = D1;
+const short LED_PIN = D4;
+const short SENSOR_PIN = A0;
+
 const short NUMPIXELS = 24;
 
 String TOUCH_ENDPOINT = "/set-touch";

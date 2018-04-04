@@ -13,9 +13,6 @@
 #include "Light.h"
 #include "SensorPin.h"
 
-short LED_PIN = D4;
-short SENSOR_PIN = A0;
-
 Light mLight(PIXELS_PIN, NUMPIXELS);
 SensorPin mSensor(SENSOR_PIN);
 Ticker mTicker;
