@@ -1,3 +1,6 @@
+const short PIXELS_PIN = D1;
+const short NUMPIXELS = 24;
+
 String TOUCH_ENDPOINT = "/set-touch";
 String LIGHT_ENDPOINT = "/get-light";
 

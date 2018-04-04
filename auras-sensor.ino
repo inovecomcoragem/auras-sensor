@@ -4,26 +4,35 @@
 #include <WiFiUdp.h>
 #include <ESP8266HTTPClient.h>
 #include <ArduinoOTA.h>
+#include <Ticker.h>
 
 #include <Adafruit_NeoPixel.h>
 
 #include "parameters.h"
 #include "auras-sensor.h"
 #include "Light.h"
+#include "SensorPin.h"
 
-Light mLight;
+short LED_PIN = D4;
+short SENSOR_PIN = A0;
+
+Light mLight(PIXELS_PIN, NUMPIXELS);
+SensorPin mSensor(SENSOR_PIN);
+Ticker mTicker;
+
 bool bUpdateTouch = false;
 
 int lightValue = LOW;
 int touchValue = LOW;
 
-short PIR_PIN = D2;
+void mSensorSampleWrapper() {
+  mSensor.getSample();
+}
 
 void setup() {
   Serial.begin(115200);
   Serial.println("\nSetup");
-  pinMode(D4, OUTPUT);
-  pinMode(PIR_PIN, INPUT);
+  pinMode(LED_PIN, OUTPUT);
 
   mLight.setColor(0.0f);
   nextLightUpdate = millis() + LIGHT_UPDATE_PERIOD_MILLIS;
@@ -42,6 +51,7 @@ void setup() {
   OTA_HOSTNAME += WiFi.macAddress().substring(12);
 
   setupAndStartOTA();
+  mTicker.attach_ms(10, mSensorSampleWrapper);
 }
 
 void updateLight() {
@@ -65,7 +75,7 @@ void updateLight() {
 
 void updateTouch() {
   for (int i = 0; i < 4; i++) {
-    touchValue = digitalRead(PIR_PIN);
+    touchValue = mSensor.getReading();
     Serial.println(touchValue);
     if (!touchValue) return;
     delay(100);
@@ -91,7 +101,7 @@ void loop() {
     if (WiFi.status() == WL_CONNECTED) updateTouch();
   }
 
-  digitalWrite(D4, (nextLightUpdate / LIGHT_UPDATE_PERIOD_MILLIS) % 2);
+  digitalWrite(LED_PIN, (nextLightUpdate / LIGHT_UPDATE_PERIOD_MILLIS) % 2);
   ArduinoOTA.handle();
 }
 
