@@ -65,7 +65,6 @@ void updateLight() {
   }
   http.end();
 
-  lightValue = (int)random(0, 2);
   Serial.println(lightValue);
   if (lightValue) {
     mLight.setColor(1.0f);
@@ -83,11 +82,9 @@ void updateTouch() {
 
   HTTPClient http;
   http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + TOUCH_ENDPOINT + "/1");
-  int httpCode = http.GET();
+  http.GET();
   delay(10);
   http.end();
-  delay(1000);
-  mLight.setColor(0.0f);
   bUpdateTouch = false;
 }
 
