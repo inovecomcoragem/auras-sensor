@@ -71,6 +71,7 @@ void updateLight() {
   Serial.println(printString);
 
   if (lightValue) {
+    mSensor.calibrate();
     mLight.setColor(1.0f);
     bUpdateTouch = true;
   }

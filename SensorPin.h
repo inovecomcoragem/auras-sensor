@@ -8,10 +8,10 @@ class SensorPin {
     int sum;
     int currentIndex;
     int averageThreshold;
-    void calibrate();
     void calibrate(short _numRounds);
   public:
     SensorPin(short _pin);
+    void calibrate();
     int getReading();
     int getReadingRaw();
     void getSample();
