@@ -17,7 +17,7 @@ Light mLight(PIXELS_PIN, NUMPIXELS);
 SensorPin mSensor(SENSOR_PIN);
 Ticker mTicker;
 
-bool bUpdateTouch = false;
+State mState;
 
 int lightValue = LOW;
 int touchValue = LOW;
@@ -31,8 +31,10 @@ void setup() {
   Serial.println("\nSetup");
   pinMode(LED_PIN, OUTPUT);
 
+  mState = TOUCH;
   mLight.setColor(0.0f);
   nextLightUpdate = millis() + LIGHT_UPDATE_PERIOD_MILLIS;
+  nextTouchUpdate = millis() + TOUCH_UPDATE_PERIOD_MILLIS;
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID.c_str(), WIFI_PASS.c_str());
@@ -51,7 +53,7 @@ void setup() {
   mTicker.attach_ms(10, mSensorSampleWrapper);
 }
 
-int getLightValue() {
+int getLight() {
   HTTPClient http;
   http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + LIGHT_ENDPOINT);
   int httpCode = http.GET();
@@ -61,40 +63,14 @@ int getLightValue() {
     lightValue = http.getString().toInt();
   }
   http.end();
+
+  String printString = "From getLight: lightValue = " + String(lightValue);
+  Serial.println(printString);
+
   return lightValue;
 }
 
-void updateLight() {
-  lightValue = getLightValue();
-
-  String printString = "From updateLight: lightValue = " + String(lightValue);
-  Serial.println(printString);
-
-  if (lightValue) {
-    mSensor.calibrate();
-    mLight.setColor(1.0f);
-    bUpdateTouch = true;
-  }
-}
-
 void updateTouch() {
-  lightValue = getLightValue();
-
-  String printString = "From updateTouch: lightValue = " + String(lightValue);
-  Serial.println(printString);
-
-  if (!lightValue) {
-    mLight.setColor(0.0f);
-    bUpdateTouch = false;
-    touchValue = 0;
-    return;
-  }
-
-  if (touchValue) {
-    delay(300);
-    return;
-  }
-
   for (int i = 0; i < 4; i++) {
     touchValue = mSensor.getReading();
 
@@ -112,13 +88,27 @@ void updateTouch() {
 }
 
 void loop() {
-  if ((!bUpdateTouch) && (millis() > nextLightUpdate)) {
-    if (WiFi.status() == WL_CONNECTED) updateLight();
-    nextLightUpdate += LIGHT_UPDATE_PERIOD_MILLIS;
-  }
+  if ((mState == TOUCH) && (millis() > nextTouchUpdate)) {
+    if (WiFi.status() == WL_CONNECTED)  {
+      updateTouch();
+      lightValue = getLight();
+    }
 
-  if (bUpdateTouch) {
-    if (WiFi.status() == WL_CONNECTED) updateTouch();
+    if (lightValue) {
+      mLight.setColor(1.0f);
+      mState = LIGHT;
+    }
+    nextTouchUpdate += TOUCH_UPDATE_PERIOD_MILLIS;
+  } else if ((mState == LIGHT) && (millis() > nextLightUpdate)) {
+    if (WiFi.status() == WL_CONNECTED) {
+      lightValue = getLight();
+    }
+
+    if (!lightValue) {
+      mLight.setColor(0.0f);
+      mState = TOUCH;
+    }
+    nextLightUpdate += LIGHT_UPDATE_PERIOD_MILLIS;
   }
 
   digitalWrite(LED_PIN, (nextLightUpdate / LIGHT_UPDATE_PERIOD_MILLIS) % 2);

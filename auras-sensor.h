@@ -9,8 +9,13 @@ String LIGHT_ENDPOINT = "/get-light";
 
 String OTA_HOSTNAME = "Auras-";
 
-long LIGHT_UPDATE_PERIOD_MILLIS = 2000;
+long LIGHT_UPDATE_PERIOD_MILLIS = 500;
 long nextLightUpdate = 0L;
+
+long TOUCH_UPDATE_PERIOD_MILLIS = 1000;
+long nextTouchUpdate = 0L;
+
+enum State { TOUCH, LIGHT };
 
 void setupAndStartOTA() {
   ArduinoOTA.setHostname(OTA_HOSTNAME.c_str());
