@@ -70,21 +70,32 @@ int getLight() {
   return lightValue;
 }
 
-void updateTouch() {
-  for (int i = 0; i < 4; i++) {
-    touchValue = mSensor.getReading();
-
-    String printString = "From updateTouch: touchValue = " + String(touchValue);
-    Serial.println(printString);
-    delay(100);
-    if (!touchValue) return;
-  }
-
+void setTouch(int touchVal) {
   HTTPClient http;
-  http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + TOUCH_ENDPOINT + "/1");
+  http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + TOUCH_ENDPOINT + "/" + String(touchVal));
   http.GET();
   delay(10);
   http.end();
+}
+
+void updateTouch() {
+  for (int i = 0; i < 4; i++) {
+    touchValue = mSensor.getReading();
+    int touchRaw = mSensor.getReadingRaw();
+    int touchAverage = mSensor.getSlowAverage();
+
+    String printString = "From updateTouch: = " + String(touchRaw);
+    printString += " <-> " + String(touchAverage) + " = ";
+    printString += String(touchValue);
+    Serial.println(printString);
+
+    delay(100);
+    if (!touchValue) {
+      setTouch(touchValue);
+      return;
+    }
+  }
+  setTouch(touchValue);
 }
 
 void loop() {

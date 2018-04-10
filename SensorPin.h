@@ -1,19 +1,22 @@
 class SensorPin {
   private:
-    const static short NUM_SAMPLES = 100;
-    const static short THRESHOLD_DIFFERENCE = 100;
+    const static short NUM_SAMPLES_FAST = 100;
+    const static short NUM_SAMPLES_SLOW = 1000;
+    const static short THRESHOLD_DIFFERENCE = 64;
     const static int SAMPLE_PERIOD_CLOCK = 10 * 80e3;
+
     short pin;
-    int sample[NUM_SAMPLES];
-    int sum;
-    int currentIndex;
-    int averageThreshold;
-    void calibrate(short _numRounds);
+    short sampleFast[NUM_SAMPLES_FAST];
+    short sampleSlow[NUM_SAMPLES_SLOW];
+    int sumFast;
+    int sumSlow;
+    short currentIndexFast;
+    short currentIndexSlow;
   public:
     SensorPin(short _pin);
-    void calibrate();
     int getReading();
     int getReadingRaw();
+    int getSlowAverage();
     void getSample();
 };
 

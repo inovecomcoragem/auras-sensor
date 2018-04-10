@@ -3,40 +3,43 @@
 
 SensorPin::SensorPin(short _pin) {
   pin = _pin;
-  for (currentIndex = 0; currentIndex < NUM_SAMPLES; currentIndex++) {
-    sample[currentIndex] = analogRead(pin);
-    sum += sample[currentIndex];
-  }
-  currentIndex = 0;
-  calibrate(3);
-}
+  for (currentIndexSlow = 0; currentIndexSlow < NUM_SAMPLES_SLOW; currentIndexSlow++) {
+    sampleSlow[currentIndexSlow] = analogRead(pin);
+    sumSlow += sampleSlow[currentIndexSlow];
 
-void SensorPin::calibrate() {
-  calibrate(1);
+    if (currentIndexSlow < NUM_SAMPLES_FAST) {
+      sampleFast[currentIndexFast] = sampleFast[currentIndexSlow];
+      sumFast += sampleFast[currentIndexFast];
+      currentIndexFast = (currentIndexFast + 1) % NUM_SAMPLES_FAST;
+    }
+  }
+  currentIndexFast = 0;
+  currentIndexSlow = 0;
 }
 
 void SensorPin::getSample() {
-  sum -= sample[currentIndex];
-  sample[currentIndex] = analogRead(pin);
-  sum += sample[currentIndex];
-  currentIndex = (currentIndex + 1) % NUM_SAMPLES;
-}
+  sumFast -= sampleFast[currentIndexFast];
+  sumSlow -= sampleSlow[currentIndexSlow];
 
-void SensorPin::calibrate(short _numRounds) {
-  noInterrupts();
-  for (int round = 0; round < _numRounds * NUM_SAMPLES; round++) {
-    getSample();
-    delay(10);
-  }
-  averageThreshold = sum / NUM_SAMPLES;
-  interrupts();
+  sampleFast[currentIndexFast] = analogRead(pin);
+  sampleSlow[currentIndexSlow] = sampleFast[currentIndexFast];
+
+  sumFast += sampleFast[currentIndexFast];
+  sumSlow += sampleSlow[currentIndexSlow];
+
+  currentIndexFast = (currentIndexFast + 1) % NUM_SAMPLES_FAST;
+  currentIndexSlow = (currentIndexSlow + 1) % NUM_SAMPLES_SLOW;
 }
 
 int SensorPin::getReadingRaw() {
-  return sum / NUM_SAMPLES;
+  return sumFast / NUM_SAMPLES_FAST;
+}
+
+int SensorPin::getSlowAverage() {
+  return sumSlow / NUM_SAMPLES_SLOW;
 }
 
 int SensorPin::getReading() {
-  return ((getReadingRaw() - averageThreshold) > THRESHOLD_DIFFERENCE);
+  return ((getReadingRaw() - getSlowAverage()) > THRESHOLD_DIFFERENCE);
 }
 
