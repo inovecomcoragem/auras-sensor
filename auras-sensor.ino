@@ -17,10 +17,9 @@ Light mLight(PIXELS_PIN, NUMPIXELS);
 SensorPin mSensor(SENSOR_PIN);
 Ticker mTicker;
 
-State mState;
-
-int lightValue = LOW;
+int lightValue[] = { LOW, LOW };
 int touchValue = LOW;
+int touchRaw, touchAverage;
 
 void mSensorSampleWrapper() {
   mSensor.getSample();
@@ -31,10 +30,8 @@ void setup() {
   Serial.println("\nSetup");
   pinMode(LED_PIN, OUTPUT);
 
-  mState = TOUCH;
   mLight.setColor(0.0f);
-  nextLightUpdate = millis() + LIGHT_UPDATE_PERIOD_MILLIS;
-  nextTouchUpdate = millis() + TOUCH_UPDATE_PERIOD_MILLIS;
+  nextUpdate = millis() + UPDATE_PERIOD_MILLIS;
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID.c_str(), WIFI_PASS.c_str());
@@ -54,23 +51,28 @@ void setup() {
 }
 
 int getLight() {
+  if (WiFi.status() != WL_CONNECTED) return lightValue[0];
+
   HTTPClient http;
   http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + LIGHT_ENDPOINT);
   int httpCode = http.GET();
   delay(10);
 
   if (httpCode == HTTP_CODE_OK) {
-    lightValue = http.getString().toInt();
+    lightValue[1] = lightValue[0];
+    lightValue[0] = http.getString().toInt();
   }
   http.end();
 
-  String printString = "From getLight: lightValue = " + String(lightValue);
+  String printString = "From getLight: lightValue = " + String(lightValue[0]);
   Serial.println(printString);
 
-  return lightValue;
+  return lightValue[0];
 }
 
 void setTouch(int touchVal) {
+  if (WiFi.status() != WL_CONNECTED) return;
+
   HTTPClient http;
   http.begin("http://" + SERVER_ADDRESS + ":" + SERVER_PORT + TOUCH_ENDPOINT + "/" + String(touchVal));
   http.GET();
@@ -81,8 +83,8 @@ void setTouch(int touchVal) {
 void updateTouch() {
   for (int i = 0; i < 4; i++) {
     touchValue = mSensor.getReading();
-    int touchRaw = mSensor.getReadingRaw();
-    int touchAverage = mSensor.getSlowAverage();
+    touchRaw = mSensor.getReadingRaw();
+    touchAverage = mSensor.getSlowAverage();
 
     String printString = "From updateTouch: = " + String(touchRaw);
     printString += " <-> " + String(touchAverage) + " = ";
@@ -90,39 +92,24 @@ void updateTouch() {
     Serial.println(printString);
 
     delay(100);
-    if (!touchValue) {
-      setTouch(touchValue);
-      return;
-    }
+    if (!touchValue) break;
   }
   setTouch(touchValue);
 }
 
 void loop() {
-  if ((mState == TOUCH) && (millis() > nextTouchUpdate)) {
-    if (WiFi.status() == WL_CONNECTED)  {
-      updateTouch();
-      lightValue = getLight();
+  if (millis() > nextUpdate) {
+    updateTouch();
+    lightValue[0] = getLight();
+
+    if (lightValue[0] != lightValue[1]) {
+      mLight.setColor((float)lightValue[0]);
     }
 
-    if (lightValue) {
-      mLight.setColor(1.0f);
-      mState = LIGHT;
-    }
-    nextTouchUpdate += TOUCH_UPDATE_PERIOD_MILLIS;
-  } else if ((mState == LIGHT) && (millis() > nextLightUpdate)) {
-    if (WiFi.status() == WL_CONNECTED) {
-      lightValue = getLight();
-    }
-
-    if (!lightValue) {
-      mLight.setColor(0.0f);
-      mState = TOUCH;
-    }
-    nextLightUpdate += LIGHT_UPDATE_PERIOD_MILLIS;
+    nextUpdate += UPDATE_PERIOD_MILLIS;
   }
 
-  digitalWrite(LED_PIN, (nextLightUpdate / LIGHT_UPDATE_PERIOD_MILLIS) % 2);
+  digitalWrite(LED_PIN, (nextUpdate / UPDATE_PERIOD_MILLIS) % 2);
   ArduinoOTA.handle();
 }
 

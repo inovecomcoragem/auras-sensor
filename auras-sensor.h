@@ -2,20 +2,15 @@ const short PIXELS_PIN = D1;
 const short LED_PIN = D4;
 const short SENSOR_PIN = A0;
 
-const short NUMPIXELS = 24;
+const short NUMPIXELS = 60;
 
 String TOUCH_ENDPOINT = "/set-touch";
 String LIGHT_ENDPOINT = "/get-light";
 
 String OTA_HOSTNAME = "Auras-";
 
-long LIGHT_UPDATE_PERIOD_MILLIS = 500;
-long nextLightUpdate = 0L;
-
-long TOUCH_UPDATE_PERIOD_MILLIS = 1000;
-long nextTouchUpdate = 0L;
-
-enum State { TOUCH, LIGHT };
+long UPDATE_PERIOD_MILLIS = 1000;
+long nextUpdate = 0L;
 
 void setupAndStartOTA() {
   ArduinoOTA.setHostname(OTA_HOSTNAME.c_str());
