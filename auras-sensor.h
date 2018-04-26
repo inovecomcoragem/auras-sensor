@@ -4,16 +4,11 @@ const short SENSOR_PIN = A0;
 
 const short NUMPIXELS = 60;
 
-String TOUCH_ENDPOINT = "/set-touch";
-String LIGHT_ENDPOINT = "/get-light";
-
-String OTA_HOSTNAME = "Auras-";
-
 long UPDATE_PERIOD_MILLIS = 1000;
 long nextUpdate = 0L;
 
-void setupAndStartOTA() {
-  ArduinoOTA.setHostname(OTA_HOSTNAME.c_str());
+void setupAndStartOTA(String serverName) {
+  ArduinoOTA.setHostname(serverName.c_str());
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
