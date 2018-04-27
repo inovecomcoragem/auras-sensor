@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <ESP8266HTTPClient.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 #include <Ticker.h>
@@ -10,7 +10,6 @@
 
 #include "parameters.h"
 #include "auras-sensor.h"
-#include "auras-server.h"
 #include "Light.h"
 #include "SensorPin.h"
 
@@ -18,6 +17,8 @@ Light mLight(PIXELS_PIN, NUMPIXELS);
 SensorPin mSensor(SENSOR_PIN);
 Ticker mTicker;
 
+int lightValue[] = { LOW, LOW };
+int touchValue = LOW;
 int touchRaw, touchAverage;
 
 void mSensorSampleWrapper() {
@@ -45,10 +46,39 @@ void setup() {
     Serial.println(WiFi.localIP());
   }
 
-  setRoutesAndStartServer();
   setupAndStartOTA(SERVER_ADDRESS);
 
   mTicker.attach_ms(10, mSensorSampleWrapper);
+}
+
+int getLight() {
+  if (WiFi.status() != WL_CONNECTED) return lightValue[0];
+
+  HTTPClient http;
+  http.begin(SERVER_ADDRESS + ":" + SERVER_PORT + LIGHT_ENDPOINT);
+  int httpCode = http.GET();
+  delay(10);
+
+  if (httpCode == HTTP_CODE_OK) {
+    lightValue[1] = lightValue[0];
+    lightValue[0] = http.getString().toInt();
+  }
+  http.end();
+
+  String printString = "From getLight: lightValue = " + String(lightValue[0]);
+  Serial.println(printString);
+
+  return lightValue[0];
+}
+
+void setTouch(int touchVal) {
+  if (WiFi.status() != WL_CONNECTED) return;
+
+  HTTPClient http;
+  http.begin(SERVER_ADDRESS + ":" + SERVER_PORT + TOUCH_ENDPOINT + "/" + String(touchVal));
+  http.GET();
+  delay(10);
+  http.end();
 }
 
 void updateTouch() {
@@ -65,11 +95,13 @@ void updateTouch() {
     delay(100);
     if (!touchValue) break;
   }
+  setTouch(touchValue);
 }
 
 void loop() {
   if (millis() > nextUpdate) {
     updateTouch();
+    lightValue[0] = getLight();
 
     if (lightValue[0] != lightValue[1]) {
       mLight.setColor((float)lightValue[0]);
@@ -79,7 +111,6 @@ void loop() {
   }
 
   digitalWrite(LED_PIN, (nextUpdate / UPDATE_PERIOD_MILLIS) % 2);
-  mServer.handleClient();
   ArduinoOTA.handle();
 }
 

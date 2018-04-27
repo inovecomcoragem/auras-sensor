@@ -15,6 +15,6 @@ String WIFI_SSID = "my-network";
 String WIFI_PASS = "my-password";
 ```
 ```
-String SERVER_ADDRESS = "auras-sensor";
+String SERVER_ADDRESS = "http://auras.herokuapp.com";
 int SERVER_PORT = 80;
 ```

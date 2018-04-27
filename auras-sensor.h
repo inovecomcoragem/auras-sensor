@@ -4,6 +4,9 @@ const short SENSOR_PIN = A0;
 
 const short NUMPIXELS = 60;
 
+String TOUCH_ENDPOINT = "/set-touch";
+String LIGHT_ENDPOINT = "/get-light";
+
 long UPDATE_PERIOD_MILLIS = 1000;
 long nextUpdate = 0L;
 
