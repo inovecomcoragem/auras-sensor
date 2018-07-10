@@ -9,7 +9,7 @@ Code for the [NodeMCU](https://nodemcu.readthedocs.io/en/master/) module that co
 git clone https://github.com/inovecomcoragem/auras-sensor.git
 ```
 
-2. **Copy** ```parameters.h.example``` **to** ```parameters.h``` **and change values for WiFi network name, WiFi password, and server address:port:**
+2. **Copy** ```src/parameters.h.example``` **to** ```src/parameters.h``` **and change values for WiFi network name, WiFi password, and server address:port:**
 ```
 String WIFI_SSID = "my-network";
 String WIFI_PASS = "my-password";
