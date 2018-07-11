@@ -8,7 +8,7 @@ String TOUCH_ENDPOINT = "/set-touch";
 String LIGHT_ENDPOINT = "/get-light";
 
 long UPDATE_PERIOD_MILLIS = 1000;
-long nextUpdate = 0L;
+unsigned long nextUpdate = 0L;
 
 void setupAndStartOTA(String serverName) {
   ArduinoOTA.setHostname(serverName.c_str());

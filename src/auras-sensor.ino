@@ -34,7 +34,8 @@ void setup() {
   nextUpdate = millis() + UPDATE_PERIOD_MILLIS;
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID.c_str(), WIFI_PASS.c_str());
+  WiFi.begin(WIFI_SSID.c_str(),
+             (WIFI_PASS.length() < 1) ? NULL : WIFI_PASS.c_str());
 
   for (int counter = 0; (WiFi.status() != WL_CONNECTED) && (counter < 32); counter++) {
     delay(800);
