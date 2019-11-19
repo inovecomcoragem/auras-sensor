@@ -2,7 +2,7 @@ const short PIXELS_PIN = D1;
 const short LED_PIN = D4;
 const short SENSOR_PIN = A0;
 
-const short NUMPIXELS = 60;
+const short NUMPIXELS = 32;
 
 String TOUCH_ENDPOINT = "/set-touch";
 String LIGHT_ENDPOINT = "/get-light";
@@ -22,4 +22,3 @@ void setupAndStartOTA(String serverName) {
   });
   ArduinoOTA.begin();
 }
-

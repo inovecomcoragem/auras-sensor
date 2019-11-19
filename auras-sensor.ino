@@ -6,6 +6,10 @@
 #include <ArduinoOTA.h>
 #include <Ticker.h>
 
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>
+
 #include <Adafruit_NeoPixel.h>
 
 #include "parameters.h"
@@ -30,22 +34,13 @@ void setup() {
   Serial.println("\nSetup");
   pinMode(LED_PIN, OUTPUT);
 
+  WiFiManager wifiManager;
+  // wifiManager.resetSettings();
+  wifiManager.setAPStaticIPConfig(IPAddress(1, 2, 3, 4), IPAddress(1, 2, 3, 4), IPAddress(255, 255, 255, 0));
+  wifiManager.autoConnect("AURAS-WIFI-SETUP");
+
   mLight.setColor(0.0f);
   nextUpdate = millis() + UPDATE_PERIOD_MILLIS;
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID.c_str(),
-             (WIFI_PASS.length() < 1) ? NULL : WIFI_PASS.c_str());
-
-  for (int counter = 0; (WiFi.status() != WL_CONNECTED) && (counter < 32); counter++) {
-    delay(800);
-    Serial.println("Trying WiFi");
-  }
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("Connected");
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
-  }
 
   setupAndStartOTA(SERVER_ADDRESS);
 
@@ -114,4 +109,3 @@ void loop() {
   digitalWrite(LED_PIN, (nextUpdate / UPDATE_PERIOD_MILLIS) % 2);
   ArduinoOTA.handle();
 }
-
