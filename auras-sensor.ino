@@ -98,11 +98,7 @@ void loop() {
   if (millis() > nextUpdate) {
     updateTouch();
     lightValue[0] = getLight();
-
-    if (lightValue[0] != lightValue[1]) {
-      mLight.setColor((float)lightValue[0]);
-    }
-
+    mLight.setColor((float)lightValue[0]);
     nextUpdate += UPDATE_PERIOD_MILLIS;
   }
 

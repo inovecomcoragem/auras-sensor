@@ -2,7 +2,7 @@ class SensorPin {
   private:
     const static short NUM_SAMPLES_FAST = 100;
     const static short NUM_SAMPLES_SLOW = 800;
-    const static short THRESHOLD_DIFFERENCE = 32;
+    const static short THRESHOLD_DIFFERENCE = 50;
     const static int SAMPLE_PERIOD_CLOCK = 10 * 80e3;
 
     short pin;
@@ -19,4 +19,3 @@ class SensorPin {
     int getSlowAverage();
     void getSample();
 };
-
